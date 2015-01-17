@@ -1,0 +1,42 @@
+Type.registerNamespace('W2');
+W2.SatPic=function() {
+W2.SatPic.initializeBase(this);
+this._timeout = 0;
+this._userContext = null;
+this._succeeded = null;
+this._failed = null;
+}
+W2.SatPic.prototype={
+GetLatestSatelliteImage:function(id,width,height,useImageHeight,succeededCallback, failedCallback, userContext) {
+return this._invoke(W2.SatPic.get_path(), 'GetLatestSatelliteImage',true,{id:id,width:width,height:height,useImageHeight:useImageHeight},succeededCallback,failedCallback,userContext); },
+GetSatelliteImages:function(id,width,height,useImageHeight,succeededCallback, failedCallback, userContext) {
+return this._invoke(W2.SatPic.get_path(), 'GetSatelliteImages',true,{id:id,width:width,height:height,useImageHeight:useImageHeight},succeededCallback,failedCallback,userContext); },
+GetSynopChartImages:function(id,width,height,useImageHeight,succeededCallback, failedCallback, userContext) {
+return this._invoke(W2.SatPic.get_path(), 'GetSynopChartImages',true,{id:id,width:width,height:height,useImageHeight:useImageHeight},succeededCallback,failedCallback,userContext); },
+GetStreamlineChartImages:function(id,width,height,useImageHeight,succeededCallback, failedCallback, userContext) {
+return this._invoke(W2.SatPic.get_path(), 'GetStreamlineChartImages',true,{id:id,width:width,height:height,useImageHeight:useImageHeight},succeededCallback,failedCallback,userContext); },
+GetSkiChartImages:function(id,width,height,useImageHeight,succeededCallback, failedCallback, userContext) {
+return this._invoke(W2.SatPic.get_path(), 'GetSkiChartImages',true,{id:id,width:width,height:height,useImageHeight:useImageHeight},succeededCallback,failedCallback,userContext); }}
+W2.SatPic.registerClass('W2.SatPic',Sys.Net.WebServiceProxy);
+W2.SatPic._staticInstance = new W2.SatPic();
+W2.SatPic.set_path = function(value) { W2.SatPic._staticInstance._path = value; }
+W2.SatPic.get_path = function() { return W2.SatPic._staticInstance._path; }
+W2.SatPic.set_timeout = function(value) { W2.SatPic._staticInstance._timeout = value; }
+W2.SatPic.get_timeout = function() { return W2.SatPic._staticInstance._timeout; }
+W2.SatPic.set_defaultUserContext = function(value) { W2.SatPic._staticInstance._userContext = value; }
+W2.SatPic.get_defaultUserContext = function() { return W2.SatPic._staticInstance._userContext; }
+W2.SatPic.set_defaultSucceededCallback = function(value) { W2.SatPic._staticInstance._succeeded = value; }
+W2.SatPic.get_defaultSucceededCallback = function() { return W2.SatPic._staticInstance._succeeded; }
+W2.SatPic.set_defaultFailedCallback = function(value) { W2.SatPic._staticInstance._failed = value; }
+W2.SatPic.get_defaultFailedCallback = function() { return W2.SatPic._staticInstance._failed; }
+W2.SatPic.set_path("/SatPic.asmx");
+W2.SatPic.GetLatestSatelliteImage= function(id,width,height,useImageHeight,onSuccess,onFailed,userContext) {W2.SatPic._staticInstance.GetLatestSatelliteImage(id,width,height,useImageHeight,onSuccess,onFailed,userContext); }
+W2.SatPic.GetSatelliteImages= function(id,width,height,useImageHeight,onSuccess,onFailed,userContext) {W2.SatPic._staticInstance.GetSatelliteImages(id,width,height,useImageHeight,onSuccess,onFailed,userContext); }
+W2.SatPic.GetSynopChartImages= function(id,width,height,useImageHeight,onSuccess,onFailed,userContext) {W2.SatPic._staticInstance.GetSynopChartImages(id,width,height,useImageHeight,onSuccess,onFailed,userContext); }
+W2.SatPic.GetStreamlineChartImages= function(id,width,height,useImageHeight,onSuccess,onFailed,userContext) {W2.SatPic._staticInstance.GetStreamlineChartImages(id,width,height,useImageHeight,onSuccess,onFailed,userContext); }
+W2.SatPic.GetSkiChartImages= function(id,width,height,useImageHeight,onSuccess,onFailed,userContext) {W2.SatPic._staticInstance.GetSkiChartImages(id,width,height,useImageHeight,onSuccess,onFailed,userContext); }
+var gtc = Sys.Net.WebServiceProxy._generateTypedConstructor;
+if (typeof(W2.SatPic_SatPicElement) === 'undefined') {
+W2.SatPic_SatPicElement=gtc("W2.SatPic+SatPicElement");
+W2.SatPic_SatPicElement.registerClass('W2.SatPic_SatPicElement');
+}
