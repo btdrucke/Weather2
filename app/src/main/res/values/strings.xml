@@ -18,8 +18,8 @@
     <string name="pressure_value">%s mb</string>
     <string name="updated_date_value">Last updated %s</string>
 
-    <string name="weather_0_day">Clear skies</string>
-    <string name="weather_0_night">Sunny skies</string>
+    <string name="weather_0_night">Clear skies</string>
+    <string name="weather_0_day">Sunny skies</string>
     <string name="weather_1">Partly Cloudy skies</string>
     <string name="weather_10">Mist</string>
     <string name="weather_2">Cloudy skies</string>

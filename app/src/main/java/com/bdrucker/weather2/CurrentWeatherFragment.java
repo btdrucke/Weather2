@@ -77,7 +77,7 @@ public class CurrentWeatherFragment extends Fragment {
         boolean useMetric = false;
 
         final Resources resources = getResources();
-        locationView.setText(resources.getString(R.string.current_weather_location, TextView.BufferType.valueOf(postalCode)));
+        locationView.setText(resources.getString(R.string.current_weather_location, postalCode));
         lastUpdatedView.setText(resources.getString(R.string.updated_date_value, dateFormat.format(lastUpdated)));
         temperatureView.setText(forecast.getTemperature(resources, useMetric));
 
@@ -85,10 +85,14 @@ public class CurrentWeatherFragment extends Fragment {
         final boolean isNight = (hour < 6 || hour > 18);
         if (isNight) {
             descriptionView.setText(forecast.getNightDescription(resources));
-            descriptionIcon.setImageResource(forecast.getNightIconId());
+            Integer iconId = forecast.getNightIconId();
+            if (iconId != null)
+                descriptionIcon.setImageResource(iconId);
         } else {
             descriptionView.setText(forecast.getDescription(resources));
-            descriptionIcon.setImageResource(forecast.getIconId());
+            Integer iconId = forecast.getIconId();
+            if (iconId != null)
+                descriptionIcon.setImageResource(iconId);
         }
 
         // Show wind info if we have the data.

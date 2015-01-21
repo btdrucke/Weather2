@@ -54,16 +54,16 @@ public class Forecast {
         return (weatherCodeResources == null) ? null : resources.getString(weatherCodeResources.nightStringId);
     }
 
-    public int getIconId() {
-        return weatherCodeResources.dayIconId;
+    public Integer getIconId() {
+        return (weatherCodeResources == null) ? null : weatherCodeResources.dayIconId;
     }
 
-    public int getNightIconId() {
-        return weatherCodeResources.nightIconId;
+    public Integer getNightIconId() {
+        return (weatherCodeResources == null) ? null : weatherCodeResources.nightIconId;
     }
 
     public String getTemperature(Resources resources, boolean useMetric) {
-        if ((windValueId == null) || (windKilometersPerHour == null))
+        if (degreesCelsius == null)
             return null;
 
         if (useMetric)
