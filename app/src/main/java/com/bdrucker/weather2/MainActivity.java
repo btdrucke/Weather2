@@ -18,9 +18,11 @@ import com.bdrucker.weather2.api.ForecastClient;
 import com.bdrucker.weather2.data.Forecast;
 import com.bdrucker.weather2.data.FutureForecast;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class MainActivity
         extends ActionBarActivity
@@ -42,6 +44,7 @@ public class MainActivity
     private ForecastClient apiClient;
     private MenuItem refreshMenuOption;
     private String postalCode = "97206";  // TODO: implement.
+    private boolean useMetric = false; // TODO: implement.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,16 +160,16 @@ public class MainActivity
     public void onSuccess(Forecast forecast, List<FutureForecast> futureForecasts) {
         showProgress(false);
         enableRefreshMenuOption(true);
-        if (currentWeatherFragment != null)
-            currentWeatherFragment.setData(forecast, postalCode, new Date());
-        return;
+        if (currentWeatherFragment != null) {
+            final Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
+            currentWeatherFragment.setData(forecast, postalCode, now, useMetric);
+        }
     }
 
     @Override
     public void onFailure(ForecastClient.FailureReasonEnum reason, int statusCode, String response) {
         showProgress(false);
         enableRefreshMenuOption(true);
-        return;
     }
 
     private void showProgress(boolean show) {
@@ -219,6 +222,4 @@ public class MainActivity
         final ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         return cm.getActiveNetworkInfo() == null;
     }
-
-
 }

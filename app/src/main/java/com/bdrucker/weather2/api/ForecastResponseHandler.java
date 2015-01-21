@@ -111,18 +111,19 @@ public class ForecastResponseHandler extends AsyncHttpResponseHandler {
             if (forecastNode == null)
                 continue;
 
+            final Date forecastDate = getDate(forecastNode, "date");
             forecasts.add(new FutureForecast(
-                    getDate(forecastNode, "date"),
-                    getFutureForecast(forecastNode, "day_max_temp", "day"),
-                    getFutureForecast(forecastNode, "night_min_temp", "night")));
+                    getFutureForecast(forecastNode, "day_max_temp", "day", forecastDate),
+                    getFutureForecast(forecastNode, "night_min_temp", "night", forecastDate)));
         }
 
         return forecasts;
     }
 
-    private Forecast getFutureForecast(JSONObject node, String tempName, String childNodeName) {
+    private Forecast getFutureForecast(JSONObject node, String tempName, String childNodeName, Date forecastDate) {
         final Forecast.Builder builder = new Forecast.Builder();
-        builder.setDegreesCelsius(getIntegerIfExists(node, tempName));
+        builder.setForecastDate(forecastDate)
+                .setDegreesCelsius(getIntegerIfExists(node, tempName));
 
         final JSONObject childNode = getFirstArrayElementIfExists(node, childNodeName);
         if (childNode != null)

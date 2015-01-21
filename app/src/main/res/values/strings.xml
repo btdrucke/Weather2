@@ -9,7 +9,7 @@
     <string name="label_wind">Wind</string>
     <string name="label_humidity">Humidity</string>
     <string name="label_pressure">Pressure</string>
-    <string name="current_weather_location">Current weather for %s</string>
+    <string name="current_weather_for_postal_code">Current weather for %s</string>
     <string name="wind_units_metric">kph</string>
     <string name="wind_units_imperial">mph</string>
     <string name="temperature_value_metric">%dºC</string>
@@ -84,4 +84,5 @@
     <string name="wind_value_W">W %1$d %2$s</string>
     <string name="wind_value_WNW">WNW %1$d %2$s</string>
     <string name="wind_value_WSW">WSW %1$d %2$s</string>
+    <string name="forecast_for_postal_code">Weather Forecast for %s</string>
 </resources>

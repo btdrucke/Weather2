@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="current_background">#ddd</color>
+    <color name="background_gradient_outside">#ccc</color>
+    <color name="background_gradient_middle">#ddd</color>
     <color name="forecast_background">#eee</color>
     <color name="modal_background">#4000</color>
+    <color name="day_weather_card_background">#FFF</color>
+    <color name="night_weather_card_background">#333</color>
+
 </resources>

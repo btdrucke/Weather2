@@ -6,7 +6,7 @@ import com.bdrucker.weather2.R;
 
 import java.util.Date;
 
-public class Forecast {
+public class Forecast implements BaseForecastInterface {
     // Data
     private final Date forecastDate;
     private final Integer weatherCode;
@@ -46,22 +46,32 @@ public class Forecast {
         this.windValueId = WeatherResources.getWindResources(windDirection);
     }
 
+    @Override
+    public Date getForecastDate() {
+        return forecastDate;
+    }
+
+    @Override
     public String getDescription(Resources resources) {
         return (weatherCodeResources == null) ? null : resources.getString(weatherCodeResources.dayStringId);
     }
 
+    @Override
     public String getNightDescription(Resources resources) {
         return (weatherCodeResources == null) ? null : resources.getString(weatherCodeResources.nightStringId);
     }
 
+    @Override
     public Integer getIconId() {
         return (weatherCodeResources == null) ? null : weatherCodeResources.dayIconId;
     }
 
+    @Override
     public Integer getNightIconId() {
         return (weatherCodeResources == null) ? null : weatherCodeResources.nightIconId;
     }
 
+    @Override
     public String getTemperature(Resources resources, boolean useMetric) {
         if (degreesCelsius == null)
             return null;
@@ -70,6 +80,11 @@ public class Forecast {
             return resources.getString(R.string.temperature_value_metric, degreesCelsius);
         else
             return resources.getString(R.string.temperature_value_imperial, getDegreesFahrenheit());
+    }
+
+    @Override
+    public String getNightTemperature(Resources resources, boolean useMetric) {
+        return null;
     }
 
     public String getWindValue(Resources resources, boolean useMetric) {
@@ -91,18 +106,6 @@ public class Forecast {
 
     public String getPressure(Resources resources) {
         return (pressure == null) ? null : resources.getString(R.string.pressure_value, pressure);
-    }
-
-//    public String getUpdatedDateString(Resources resources) {
-//        if (updatedDate == null)
-//            return null;
-//
-//        final String dateString = DateFormat.getDateTimeInstance().format(updatedDate);
-//        return resources.getString(R.string.updated_date_value, dateString);
-//    }
-
-    public Date getForecastDate() {
-        return forecastDate;
     }
 
     private int getDegreesFahrenheit() {
