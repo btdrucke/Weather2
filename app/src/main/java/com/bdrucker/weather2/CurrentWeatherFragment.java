@@ -47,6 +47,8 @@ public class CurrentWeatherFragment extends BaseWeatherFragment<Forecast> {
 
     @Override
     protected void bindData() {
+        super.bindData();
+
         final Resources resources = getResources();
         postalCodeView.setText(resources.getString(R.string.current_weather_for_postal_code, postalCode));
 

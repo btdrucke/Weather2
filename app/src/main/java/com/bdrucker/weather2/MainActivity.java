@@ -87,7 +87,8 @@ public class MainActivity
     }
 
     private void fetchWeather() {
-        apiClient.get(postalCode);
+        if (apiClient != null)
+            apiClient.get(postalCode);
     }
 
 
@@ -129,8 +130,22 @@ public class MainActivity
         else if (fragment instanceof ForecastWeatherFragment)
             forecastWeatherFragment = (ForecastWeatherFragment) fragment;
 
-        if ((currentWeatherFragment != null) && (forecastWeatherFragment != null))
+        // TODO: only load every half hour.
+        if (areFragmentsAttached())
             fetchWeather();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // TODO: only load every half hour.
+        if (areFragmentsAttached())
+            fetchWeather();
+    }
+
+    private boolean areFragmentsAttached() {
+        return (currentWeatherFragment != null) && (forecastWeatherFragment != null);
     }
 
     @Override
