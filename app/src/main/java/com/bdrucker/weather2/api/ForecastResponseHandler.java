@@ -14,12 +14,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Handles parsing API responses and dispatching start/failure events.
  */
 public class ForecastResponseHandler extends AsyncHttpResponseHandler {
-    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-d");
+    private final SimpleDateFormat DATE_FORMAT;
     private final ForecastClient.ForecastListener listener;
 
     /**
@@ -29,6 +30,8 @@ public class ForecastResponseHandler extends AsyncHttpResponseHandler {
      */
     public ForecastResponseHandler(ForecastClient.ForecastListener listener) {
         this.listener = listener;
+        DATE_FORMAT = new SimpleDateFormat("yyyy-MM-d");
+        DATE_FORMAT.setTimeZone(TimeZone.getDefault());
     }
 
     @Override

@@ -10,8 +10,8 @@
                 "weather_text": "Fog",
                 "wind": [
                     {
-                        "dir": "Not Available",
-                        "speed": "0",
+                        "dir": "NE",
+                        "speed": "10",
                         "wind_unit": "kph"
                     }
                 ]

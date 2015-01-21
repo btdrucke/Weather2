@@ -11,7 +11,11 @@ import com.bdrucker.weather2.data.FutureForecast;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class ForecastResponseHandlerTest extends InstrumentationTestCase {
 
@@ -133,14 +137,64 @@ public class ForecastResponseHandlerTest extends InstrumentationTestCase {
          * Make sure that success or failure callbacks were called as expected
          */
         public void checkCalls() {
-            assertTrue("This test should have failed", testTodaysForecast == null && !calledOnSuccess && calledOnFailure);
-            assertNull("This test should have succeeded", testTodaysForecast != null && calledOnSuccess && !calledOnFailure);
+            if (testTodaysForecast == null)
+                assertTrue("This test should have failed", !calledOnSuccess && calledOnFailure);
+            else
+                assertTrue("This test should have succeeded", calledOnSuccess && !calledOnFailure);
         }
     }
 
     public void testStart() {
 
-        TestForecastListener listener = new TestForecastListener(null, null);
+        Forecast todayForecast = new Forecast.Builder()
+                .setHumidity(100)
+                .setDegreesCelsius(7)
+                .setPressure(1024)
+                .setWeatherCode(45)
+                .setWindDirection("NE")
+                .setWindKilometersPerHour(10)
+                .build();
+
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
+        List<FutureForecast> futureForecasts = new ArrayList<>(2);
+
+        cal.clear();
+        cal.set(2015, Calendar.JANUARY, 16);
+        futureForecasts.add(new FutureForecast(
+                cal.getTime(),
+                new Forecast.Builder()
+                        .setDegreesCelsius(12)
+                        .setWeatherCode(10)
+                        .setWindDirection("N")
+                        .setWindKilometersPerHour(7)
+                        .build(),
+                new Forecast.Builder()
+                        .setDegreesCelsius(4)
+                        .setWeatherCode(45)
+                        .setWindDirection("E")
+                        .setWindKilometersPerHour(7)
+                        .build()
+        ));
+
+        cal.clear();
+        cal.set(2015, Calendar.JANUARY, 17);
+        futureForecasts.add(new FutureForecast(
+                cal.getTime(),
+                new Forecast.Builder()
+                        .setDegreesCelsius(10)
+                        .setWeatherCode(3)
+                        .setWindDirection("SSE")
+                        .setWindKilometersPerHour(14)
+                        .build(),
+                new Forecast.Builder()
+                        .setDegreesCelsius(9)
+                        .setWeatherCode(65)
+                        .setWindDirection("E")
+                        .setWindKilometersPerHour(7)
+                        .build()
+        ));
+
+        TestForecastListener listener = new TestForecastListener(todayForecast, futureForecasts);
         ForecastResponseHandler handler = new ForecastResponseHandler(listener);
         handler.onStart();
         handler.onSuccess(200, null, loadAsset("response_success.json"));
