@@ -2,4 +2,5 @@
 <resources>
     <color name="current_background">#ddd</color>
     <color name="forecast_background">#eee</color>
+    <color name="modal_background">#4000</color>
 </resources>
