@@ -52,6 +52,36 @@ public class CurrentWeatherFragment extends BaseWeatherFragment<Forecast> {
         final Resources resources = getResources();
         postalCodeView.setText(resources.getString(R.string.current_weather_for_postal_code, postalCode));
 
+        // Show pressure info if we have the data.
+
+        final String pressureString = data.getPressure(resources);
+        if (TextUtils.isEmpty(pressureString))
+            pressureContainer.setVisibility(View.GONE);
+        else {
+            pressureContainer.setVisibility(View.VISIBLE);
+            pressureValue.setText(pressureString);
+        }
+
+        // Show humidity info if we have the data.
+
+        final String humidityString = data.getHumidity(resources);
+        if (TextUtils.isEmpty(humidityString))
+            humidityContainer.setVisibility(View.GONE);
+        else {
+            humidityContainer.setVisibility(View.VISIBLE);
+            humidityValue.setText(humidityString);
+        }
+
+        // Now bind all the units-dependant views.
+
+        onUpdateUseMetric();
+    }
+
+    @Override
+    protected void onUpdateUseMetric() {
+
+        // Show temperature and weather description text.
+
         if (isNight()) {
             dayCard.setVisibility(View.GONE);
             nightCard.setVisibility(View.VISIBLE);
@@ -70,26 +100,6 @@ public class CurrentWeatherFragment extends BaseWeatherFragment<Forecast> {
         else {
             windContainer.setVisibility(View.VISIBLE);
             windValue.setText(windString);
-        }
-
-        // Show pressure info if we have the data.
-
-        final String pressureString = data.getPressure(resources);
-        if (TextUtils.isEmpty(windString))
-            pressureContainer.setVisibility(View.GONE);
-        else {
-            pressureContainer.setVisibility(View.VISIBLE);
-            pressureValue.setText(pressureString);
-        }
-
-        // Show humidity info if we have the data.
-
-        final String humidityString = data.getHumidity(resources);
-        if (TextUtils.isEmpty(windString))
-            humidityContainer.setVisibility(View.GONE);
-        else {
-            humidityContainer.setVisibility(View.VISIBLE);
-            humidityValue.setText(humidityString);
         }
     }
 

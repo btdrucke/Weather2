@@ -1,0 +1,19 @@
+<resources>
+    <string name="title_activity_settings">Settings</string>
+
+    <string name="pref_title_postal_code">Postal code</string>
+    <string name="pref_default_postal_code">97202</string>
+    <string name="pref_title_units">Units of measurement</string>
+
+    <string-array name="pref_units_titles">
+        <item>Imperial</item>
+        <item>Metric</item>
+    </string-array>
+
+    <!-- Do not translate "pref_units_values". -->
+    <string-array name="pref_units_values">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+
+</resources>

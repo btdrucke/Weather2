@@ -84,7 +84,9 @@ public class Forecast implements BaseForecastInterface {
 
     @Override
     public String getNightTemperature(Resources resources, boolean useMetric) {
-        return null;
+        // This implementation of BaseForecastInterface does not support a separate night temperature.
+        // So we just return the day temp here.
+        return getTemperature(resources, useMetric);
     }
 
     public String getWindValue(Resources resources, boolean useMetric) {

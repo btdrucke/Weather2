@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="pref_postal_code"
+        android:title="@string/pref_title_postal_code"
+        android:defaultValue="@string/pref_default_postal_code" />
+    <ListPreference
+        android:key="pref_use_metric"
+        android:title="@string/pref_title_units"
+        android:dialogTitle="@string/pref_title_units"
+        android:entries="@array/pref_units_titles"
+        android:entryValues="@array/pref_units_values"
+        android:defaultValue="0" />
+</PreferenceScreen>

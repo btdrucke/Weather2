@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Weather2</string>
-    <string name="title_section1">Current Weather</string>
+    <string name="title_section1">Current weather</string>
     <string name="title_section2">Forecast</string>
     <string name="current_weather_for_postal_code">Current weather for %s</string>
     <string name="forecast_for_postal_code">Weather forecast for %s</string>
@@ -23,7 +23,7 @@
 
     <string name="weather_0_night">Clear skies</string>
     <string name="weather_0_day">Sunny skies</string>
-    <string name="weather_1">Partly Cloudy skies</string>
+    <string name="weather_1">Partly cloudy skies</string>
     <string name="weather_10">Mist</string>
     <string name="weather_2">Cloudy skies</string>
     <string name="weather_21">Patchy rain possible</string>

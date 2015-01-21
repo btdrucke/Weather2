@@ -1,8 +1,11 @@
 package com.bdrucker.weather2;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -10,6 +13,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,8 +32,13 @@ public class MainActivity
         extends ActionBarActivity
         implements ActionBar.TabListener, ForecastClient.ForecastListener {
 
-    private final int POSITION_CURRENT_WEATHER = 0;
-    private final int POSITION_FORECAST_WEATHER = 1;
+    private static final int RESULT_SETTINGS = 1;
+    private static final int POSITION_CURRENT_WEATHER = 0;
+    private static final int POSITION_FORECAST_WEATHER = 1;
+    private static final String DEFAULT_POSTAL_CODE = "97206";
+    private static final String DEFAULT_UNITS = SettingsActivity.PREF_VALUE_UNITS_METRIC;
+
+    private SharedPreferences prefs;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -43,13 +52,14 @@ public class MainActivity
 
     private ForecastClient apiClient;
     private MenuItem refreshMenuOption;
-    private String postalCode = "97206";  // TODO: implement.
-    private boolean useMetric = false; // TODO: implement.
+    private String postalCode;
+    private boolean useMetric;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initializePreferences();
 
         progressView = findViewById(R.id.progress);
 
@@ -86,6 +96,27 @@ public class MainActivity
         apiClient = new ForecastClient(this, this);
     }
 
+    private void initializePreferences() {
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        if (prefs.contains(SettingsActivity.PREF_KEY_POSTAL_CODE))
+            postalCode = getPostalCodeFromPreferences();
+        else {
+            editor.putString(SettingsActivity.PREF_KEY_POSTAL_CODE, DEFAULT_POSTAL_CODE);
+            postalCode = DEFAULT_POSTAL_CODE;
+        }
+
+        if (!prefs.contains(SettingsActivity.PREF_KEY_UNITS))
+            useMetric = getUseMetricPreferences();
+        else {
+            editor.putString(SettingsActivity.PREF_KEY_UNITS, DEFAULT_UNITS);
+            useMetric = SettingsActivity.PREF_VALUE_UNITS_METRIC.equals(DEFAULT_UNITS);
+        }
+
+        editor.commit();
+    }
+
     private void fetchWeather() {
         if (apiClient != null)
             apiClient.get(postalCode);
@@ -112,6 +143,7 @@ public class MainActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
+            startActivityForResult(new Intent(this, SettingsActivity.class), RESULT_SETTINGS);
             handled = true;
         } else if (id == R.id.action_refresh) {
             fetchWeather();
@@ -139,9 +171,9 @@ public class MainActivity
     protected void onResume() {
         super.onResume();
 
-        // TODO: only load every half hour.
-        if (areFragmentsAttached())
-            fetchWeather();
+//        // TODO: only load every half hour.
+//        if (areFragmentsAttached())
+//            fetchWeather();
     }
 
     private boolean areFragmentsAttached() {
@@ -193,6 +225,61 @@ public class MainActivity
             progressView.setVisibility(View.VISIBLE);
         else
             progressView.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        // Don't do anything if the activity is finishing.  This data will be picked up when this activity resumes.
+        if (isFinishing())
+            return;
+
+        switch (requestCode) {
+            case RESULT_SETTINGS:
+                String newPostalCode = getPostalCodeFromPreferences();
+                boolean newUseMetric = getUseMetricPreferences();
+
+                if (!TextUtils.equals(postalCode, newPostalCode)) {
+                    postalCode = newPostalCode;
+                    useMetric = newUseMetric;
+                    dispatchPostalCodeChanged();
+                }
+                if (useMetric != newUseMetric) {
+                    useMetric = newUseMetric;
+                    dispatchUseMetricChanged();
+                }
+
+                break;
+        }
+    }
+
+    /**
+     * Called when the user has returned form the settings activity and the postal code has changed.
+     * The useMetric flag may or may not have changed as well.
+     */
+    private void dispatchPostalCodeChanged() {
+        if (areFragmentsAttached())
+            fetchWeather();
+    }
+
+    /**
+     * Called when the user has returned form the settings activity and the useMetric flag has changed.
+     * If we make it here, the postal code did not change, however.
+     */
+    private void dispatchUseMetricChanged() {
+        if (areFragmentsAttached()) {
+            currentWeatherFragment.updateUseMetric(useMetric);
+            forecastWeatherFragment.updateUseMetric(useMetric);
+        }
+    }
+
+    private String getPostalCodeFromPreferences() {
+        return prefs.getString(SettingsActivity.PREF_KEY_POSTAL_CODE, null);
+    }
+
+    private boolean getUseMetricPreferences() {
+        return SettingsActivity.PREF_VALUE_UNITS_METRIC.equals(prefs.getString(SettingsActivity.PREF_KEY_UNITS, null));
     }
 
     /**

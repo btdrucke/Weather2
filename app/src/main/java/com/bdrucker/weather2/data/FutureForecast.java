@@ -43,7 +43,7 @@ public class FutureForecast implements BaseForecastInterface {
 
     @Override
     public Integer getNightIconId() {
-        return getNightIconId();
+        return night.getNightIconId();
     }
 
     @Override

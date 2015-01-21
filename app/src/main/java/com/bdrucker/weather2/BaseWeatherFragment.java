@@ -48,6 +48,19 @@ public abstract class BaseWeatherFragment<T> extends Fragment {
     protected Resources resources;
 
     /**
+     * If there is a change in the useMetric flag, display than depends on units of measurement will be updated.
+     *
+     * @param newValue Updated useMetric flag.
+     */
+    public final void updateUseMetric(boolean newValue) {
+        if (useMetric != newValue) {
+            useMetric = newValue;
+            if (isAdded())
+                onUpdateUseMetric();
+        }
+    }
+
+    /**
      * Get the layout resource ID for this fragment's content.
      *
      * @return Resource ID.
@@ -60,6 +73,11 @@ public abstract class BaseWeatherFragment<T> extends Fragment {
      * @param parent Root view of this fragment's content layout.  Guaranteed not to be null.
      */
     protected abstract void findViews(View parent);
+
+    /**
+     * Subclasses must implement this method to update any units-dependent display (e.g. temperature, wind speed).
+     */
+    protected abstract void onUpdateUseMetric();
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

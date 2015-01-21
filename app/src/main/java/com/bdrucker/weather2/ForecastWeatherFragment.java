@@ -56,13 +56,25 @@ public class ForecastWeatherFragment extends BaseWeatherFragment<List<FutureFore
         for (int i = 0; i < forecastLayouts.size(); ++i) {
             final FutureForecast datum = data.get(i);
             final ForecastLayout forecastLayout = forecastLayouts.get(i);
-            forecastLayout.container.setVisibility(View.VISIBLE);
 
             final String dateString = forecastDateFormat.format(datum.getForecastDate());
             forecastLayout.date.setText(dateString);
+            forecastLayout.container.setVisibility(View.VISIBLE);
+        }
+
+        // Now bind all the units-dependant views.
+        onUpdateUseMetric();
+    }
+
+
+    @Override
+    protected void onUpdateUseMetric() {
+        for (int i = 0; i < forecastLayouts.size(); ++i) {
+            final FutureForecast datum = data.get(i);
+            final ForecastLayout forecastLayout = forecastLayouts.get(i);
 
             bindWeatherCard(datum.day, forecastLayout.day, false);
-            bindWeatherCard(datum.night, forecastLayout.night, false);
+            bindWeatherCard(datum.night, forecastLayout.night, true);
         }
     }
 }
