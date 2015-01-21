@@ -175,9 +175,10 @@ public class MainActivity
     public void onSuccess(Forecast forecast, List<FutureForecast> futureForecasts) {
         showProgress(false);
         enableRefreshMenuOption(true);
-        if (currentWeatherFragment != null) {
+        if (areFragmentsAttached()) {
             final Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
             currentWeatherFragment.setData(forecast, postalCode, now, useMetric);
+            forecastWeatherFragment.setData(futureForecasts, postalCode, now, useMetric);
         }
     }
 

@@ -2,6 +2,7 @@ package com.bdrucker.weather2;
 
 import android.content.res.Resources;
 import android.view.View;
+import android.widget.TextView;
 
 import com.bdrucker.weather2.data.FutureForecast;
 
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class ForecastWeatherFragment extends BaseWeatherFragment<List<FutureForecast>> {
     // Format for displaying forecast dates in the current locale.
-    private static DateFormat forecastDateFormat = DateFormat.getDateInstance(DateFormat.SHORT);
+    private static DateFormat forecastDateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
 
     // Cached views.
     private List<ForecastLayout> forecastLayouts;
@@ -33,11 +34,13 @@ public class ForecastWeatherFragment extends BaseWeatherFragment<List<FutureFore
 
     private static class ForecastLayout {
         final View container;
+        final TextView date;
         final View day;
         final View night;
 
         ForecastLayout(View container) {
             this.container = container;
+            this.date = (TextView) container.findViewById(R.id.date);
             this.day = container.findViewById(R.id.day_weather_card);
             this.night = container.findViewById(R.id.night_weather_card);
         }
@@ -51,10 +54,13 @@ public class ForecastWeatherFragment extends BaseWeatherFragment<List<FutureFore
         postalCodeView.setText(resources.getString(R.string.forecast_for_postal_code, postalCode));
 
         for (int i = 0; i < forecastLayouts.size(); ++i) {
-            final ForecastLayout forecastLayout = forecastLayouts.get(i);
             final FutureForecast datum = data.get(i);
+            final ForecastLayout forecastLayout = forecastLayouts.get(i);
+            forecastLayout.container.setVisibility(View.VISIBLE);
 
-            forecastLayout.container.setVisibility(View.GONE);
+            final String dateString = forecastDateFormat.format(datum.getForecastDate());
+            forecastLayout.date.setText(dateString);
+
             bindWeatherCard(datum.day, forecastLayout.day, false);
             bindWeatherCard(datum.night, forecastLayout.night, false);
         }
