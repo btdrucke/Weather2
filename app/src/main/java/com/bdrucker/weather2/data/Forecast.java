@@ -1,7 +1,6 @@
 package com.bdrucker.weather2.data;
 
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 
 import com.bdrucker.weather2.R;
 
@@ -47,10 +46,6 @@ public class Forecast {
         this.windValueId = WeatherResources.getWindResources(windDirection);
     }
 
-//    public String getTitle(Resources resources) {
-//        return resources.getString(R.string.current_weather_location, postalCode);
-//    }
-
     public String getDescription(Resources resources) {
         return (weatherCodeResources == null) ? null : resources.getString(weatherCodeResources.dayStringId);
     }
@@ -59,12 +54,12 @@ public class Forecast {
         return (weatherCodeResources == null) ? null : resources.getString(weatherCodeResources.nightStringId);
     }
 
-    public Drawable getIcon(Resources resources) {
-        return (weatherCodeResources == null) ? null : resources.getDrawable(weatherCodeResources.dayIconId);
+    public int getIconId() {
+        return weatherCodeResources.dayIconId;
     }
 
-    public Drawable getNightIcon(Resources resources) {
-        return (weatherCodeResources == null) ? null : resources.getDrawable(weatherCodeResources.nightIconId);
+    public int getNightIconId() {
+        return weatherCodeResources.nightIconId;
     }
 
     public String getTemperature(Resources resources, boolean useMetric) {

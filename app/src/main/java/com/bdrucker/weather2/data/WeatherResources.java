@@ -97,7 +97,7 @@ public class WeatherResources {
         }
     }
 
-    public static WeatherCodeResourceSet getWeatherCodeResources(int weatherCode) {
+    public static WeatherCodeResourceSet getWeatherCodeResources(Integer weatherCode) {
         return weatherCodeResources.get(weatherCode);
     }
 

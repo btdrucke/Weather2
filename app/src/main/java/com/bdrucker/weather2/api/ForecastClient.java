@@ -5,18 +5,8 @@ import android.content.Context;
 import com.bdrucker.weather2.data.Forecast;
 import com.bdrucker.weather2.data.FutureForecast;
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
-import org.apache.http.Header;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -42,7 +32,7 @@ public class ForecastClient {
 
     // HTTP client and handler used for the GET request.
     private final AsyncHttpClient client;
-    private final ResponseHandler responseHandler;
+    private final ForecastResponseHandler responseHandler;
 
     /**
      * The reason why a forecast fetch has failed.
@@ -94,7 +84,7 @@ public class ForecastClient {
 
         this.context = context;
         this.client = new AsyncHttpClient();
-        this.responseHandler = new ResponseHandler(listener);
+        this.responseHandler = new ForecastResponseHandler(listener);
     }
 
     /**
@@ -124,152 +114,5 @@ public class ForecastClient {
      */
     private String getAccessCodeValue() {
         return "GyZ4eIgOgp";  //TODO: This should be obfuscated rather than stored in the binary in clear text.
-    }
-
-    private static class ResponseHandler extends AsyncHttpResponseHandler {
-        // Used to call back on request progress.  Is never null.
-        private final ForecastListener listener;
-
-        private ResponseHandler(ForecastListener listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void onStart() {
-            listener.onFetchStart();
-        }
-
-        @Override
-        public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-            Forecast forecast = null;
-            List<FutureForecast> futureForecasts = null;
-
-            final String responseString = new String(response);
-            try {
-                final JSONObject body = new JSONObject(responseString);
-                final JSONObject weatherNode = body.optJSONObject("weather");
-                if (weatherNode != null) {
-                    forecast = getTodaysForecast(weatherNode);
-                    futureForecasts = getFutureForecasts(weatherNode);
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            if ((forecast == null) || (futureForecasts == null) || futureForecasts.isEmpty())
-                listener.onFailure(FailureReasonEnum.ERROR_SERVICE, statusCode, responseString);
-            else
-                listener.onSuccess(forecast, futureForecasts);
-        }
-
-        /**
-         * Find the current weather info from a JSON tree.
-         *
-         * @param weatherNode The top-level "weather" node of the response JSON.
-         * @return The weather forecast for today.
-         */
-        private Forecast getTodaysForecast(JSONObject weatherNode) {
-            final JSONObject currentWeatherNode = weatherNode.optJSONObject("curren_weather");  // Type-o in API.
-
-            final Forecast.Builder builder = new Forecast.Builder();
-            builder.setForecastDate(new Date())
-                    .setDegreesCelsius(getIntegerIfExists(currentWeatherNode, "temp"))
-                    .setPressure(getIntegerIfExists(currentWeatherNode, "pressure"))
-                    .setHumidity(getIntegerIfExists(currentWeatherNode, "humidity"));
-            parseCommonNodes(currentWeatherNode, builder);
-
-            return builder.build();
-        }
-
-        private void parseCommonNodes(JSONObject node, Forecast.Builder builder) {
-            if (node != null) {
-                builder.setWeatherCode(getIntegerIfExists(node, "weather_code"));
-                final JSONObject windNode = getFirstArrayElementIfExists(node, "wind");
-                if (windNode != null) {
-                    builder.setWindDirection(windNode.optString("dir"))
-                            .setWindKilometersPerHour(getIntegerIfExists(windNode, "speed"));
-                }
-            }
-        }
-
-        /**
-         * Find a list of future weather forecasts from a JSON tree.
-         *
-         * @param weatherNode The top-level "weather" node of the response JSON.
-         * @return Future weather forecasts for the next two days.
-         */
-        private List<FutureForecast> getFutureForecasts(JSONObject weatherNode) {
-            final List<FutureForecast> forecasts = new ArrayList<>();
-
-            final JSONArray forecastList = weatherNode.optJSONArray("forecast");
-            if (forecastList == null)
-                return forecasts;
-
-            final int size = forecastList.length();
-            for (int i = 0; i < size; ++i) {
-                final JSONObject forecastNode = forecastList.optJSONObject(i);
-                if (forecastNode == null)
-                    continue;
-
-                forecasts.add(new FutureForecast(
-                        getDate(forecastNode, "date"),
-                        getFutureForecast(forecastNode, "day_max_temp", "day"),
-                        getFutureForecast(forecastNode, "night_min_temp", "night")));
-            }
-
-            return forecasts;
-        }
-
-        private Forecast getFutureForecast(JSONObject node, String tempName, String childNodeName) {
-            final Forecast.Builder builder = new Forecast.Builder();
-            builder.setDegreesCelsius(getIntegerIfExists(node, tempName));
-
-            final JSONObject childNode = node.optJSONObject(childNodeName);
-            if (childNode != null)
-                parseCommonNodes(childNode, builder);
-
-            return builder.build();
-        }
-
-        @Override
-        public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-            // TODO: check for socket timeout.
-            final String responseString = new String(errorResponse);
-            listener.onFailure(FailureReasonEnum.ERROR_SERVICE, statusCode, responseString);
-        }
-
-        private static Integer getIntegerIfExists(JSONObject node, String name) {
-            Integer result = null;
-            try {
-                result = node.getInt(name);
-            } catch (JSONException | NullPointerException e) {
-                // Ignore.
-            }
-            return result;
-        }
-
-        private JSONObject getFirstArrayElementIfExists(JSONObject node, String name) {
-            JSONObject result = null;
-            try {
-                final JSONArray array = node.getJSONArray(name);
-                result = array.getJSONObject(0);
-            } catch (JSONException | NullPointerException e) {
-                // Ignore.
-            }
-            return result;
-        }
-
-        private Date getDate(JSONObject node, String name) {
-            Date date = null;
-            final String dateString = node.optString(name);
-            if (dateString != null) {
-                try {
-                    date = DateFormat.getDateTimeInstance().parse(dateString);
-                } catch (ParseException e) {
-                    // Ignore.
-                }
-            }
-            return date;
-        }
     }
 }

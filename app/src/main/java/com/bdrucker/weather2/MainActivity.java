@@ -15,22 +15,33 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.bdrucker.weather2.api.ForecastClient;
-import com.bdrucker.weather2.api.ForecastResponseModel;
+import com.bdrucker.weather2.data.Forecast;
+import com.bdrucker.weather2.data.FutureForecast;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class MainActivity
         extends ActionBarActivity
         implements ActionBar.TabListener, ForecastClient.ForecastListener {
+
+    private final int POSITION_CURRENT_WEATHER = 0;
+    private final int POSITION_FORECAST_WEATHER = 1;
+
     /**
      * The {@link ViewPager} that will host the section contents.
      */
-    private ViewPager mViewPager;
+    private ViewPager viewPager;
 
     private View progressView;
 
-    private ForecastClient fetcher;
+    private CurrentWeatherFragment currentWeatherFragment;
+    private ForecastWeatherFragment forecastWeatherFragment;
+
+    private ForecastClient apiClient;
+    private MenuItem refreshMenuOption;
+    private String postalCode = "97206";  // TODO: implement.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,13 +55,13 @@ public class MainActivity
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         final SectionsPagerAdapter pagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(pagerAdapter);
+        viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager.setAdapter(pagerAdapter);
 
         // When swiping between different sections, select the corresponding
         // tab. We can also use ActionBar.Tab#select() to do this if we have
         // a reference to the Tab.
-        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
                 actionBar.setSelectedNavigationItem(position);
@@ -69,19 +80,26 @@ public class MainActivity
                             .setTabListener(this));
         }
 
-//        fetcher = new ForecastFetcher(this, this);
-//        fetchWeather();
+        apiClient = new ForecastClient(this, this);
     }
 
     private void fetchWeather() {
-        fetcher.get("97206", false);
+        apiClient.get(postalCode);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        refreshMenuOption = menu.findItem(R.id.action_refresh);
+        enableRefreshMenuOption(false);
+
         return true;
+    }
+
+    private void enableRefreshMenuOption(boolean enable) {
+        if (refreshMenuOption != null)
+            refreshMenuOption.setEnabled(enable);
     }
 
     @Override
@@ -100,10 +118,23 @@ public class MainActivity
     }
 
     @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+
+        if (fragment instanceof CurrentWeatherFragment)
+            currentWeatherFragment = (CurrentWeatherFragment) fragment;
+        else if (fragment instanceof ForecastWeatherFragment)
+            forecastWeatherFragment = (ForecastWeatherFragment) fragment;
+
+        if ((currentWeatherFragment != null) && (forecastWeatherFragment != null))
+            fetchWeather();
+    }
+
+    @Override
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
-        mViewPager.setCurrentItem(tab.getPosition());
+        viewPager.setCurrentItem(tab.getPosition());
     }
 
     @Override
@@ -119,17 +150,22 @@ public class MainActivity
     @Override
     public void onFetchStart() {
         showProgress(true);
+        enableRefreshMenuOption(false);
     }
 
     @Override
-    public void onSuccess(ForecastResponseModel.WeatherModel.CurrentWeatherModel currentWeather, List<ForecastResponseModel.WeatherModel.ForecastModel> forecasts) {
+    public void onSuccess(Forecast forecast, List<FutureForecast> futureForecasts) {
         showProgress(false);
+        enableRefreshMenuOption(true);
+        if (currentWeatherFragment != null)
+            currentWeatherFragment.setData(forecast, postalCode, new Date());
         return;
     }
 
     @Override
     public void onFailure(ForecastClient.FailureReasonEnum reason, int statusCode, String response) {
         showProgress(false);
+        enableRefreshMenuOption(true);
         return;
     }
 
@@ -144,7 +180,7 @@ public class MainActivity
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -153,9 +189,9 @@ public class MainActivity
         @Override
         public Fragment getItem(int position) {
             switch (position) {
-                case 0:
+                case POSITION_CURRENT_WEATHER:
                     return new CurrentWeatherFragment();
-                case 1:
+                case POSITION_FORECAST_WEATHER:
                     return new ForecastWeatherFragment();
             }
             return null;
@@ -170,9 +206,9 @@ public class MainActivity
         public CharSequence getPageTitle(int position) {
             Locale l = Locale.getDefault();
             switch (position) {
-                case 0:
+                case POSITION_CURRENT_WEATHER:
                     return getString(R.string.title_section1).toUpperCase(l);
-                case 1:
+                case POSITION_FORECAST_WEATHER:
                     return getString(R.string.title_section2).toUpperCase(l);
             }
             return null;

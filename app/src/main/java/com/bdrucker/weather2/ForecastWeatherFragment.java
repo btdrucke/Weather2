@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.bdrucker.weather2.api.ForecastResponseModel;
+import com.bdrucker.weather2.data.FutureForecast;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class ForecastWeatherFragment extends Fragment {
         return inflater.inflate(R.layout.forecast_weather_fragment, container, false);
     }
 
-    public void setData(List<ForecastResponseModel.WeatherModel.ForecastModel> forecasts) {
+    public void setData(List<FutureForecast> forecasts) {
 
     }
 }
