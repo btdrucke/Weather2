@@ -1,9 +1,9 @@
 package com.bdrucker.weather2;
 
-import android.content.Context;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -34,7 +34,15 @@ public class MainActivity
         extends ActionBarActivity
         implements ActionBar.TabListener, ForecastClient.ForecastListener {
 
+    /**
+     * Activity result when returning from the SettingsActivity.
+     */
     private static final int ACTIVITY_RESULT_SETTINGS = 1;
+
+    /**
+     * Activity result when returning from the SettingsActivity after a server error
+     */
+    private static final int ACTIVITY_RESULT_SETTINGS_RECOVERY = 2;
 
     private static final int POSITION_CURRENT_WEATHER = 0;
     private static final int POSITION_FORECAST_WEATHER = 1;
@@ -72,6 +80,11 @@ public class MainActivity
     private Date lastUpdated;
     private Forecast forecast;
     private List<FutureForecast> futureForecasts;
+
+    /**
+     * Keep track of when we have resumed.  Sometimes fragments attach before onResume(), sometimes after.
+     */
+    private boolean hasResumed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,15 +152,19 @@ public class MainActivity
     }
 
     private void checkForUpdate() {
-        if (areFragmentsAttached() && isTimeForRefresh())
-            fetchWeather();
-        else
-            onSuccessInternal();
+        if (hasResumed && areFragmentsAttached()) {
+            if (isTimeForRefresh())
+                fetchWeather();
+            else
+                onSuccessInternal();
+        }
     }
 
     private void fetchWeather() {
-        if (apiClient != null)
+        if (apiClient != null) {
+            enableRefreshMenuOption(false);
             apiClient.get(postalCode);
+        }
     }
 
 
@@ -155,7 +172,6 @@ public class MainActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         refreshMenuOption = menu.findItem(R.id.action_refresh);
-        enableRefreshMenuOption(false);
 
         return true;
     }
@@ -197,6 +213,7 @@ public class MainActivity
     protected void onResume() {
         super.onResume();
 
+        hasResumed = true;
         checkForUpdate();
     }
 
@@ -251,6 +268,29 @@ public class MainActivity
     public void onFailure(ForecastClient.FailureReasonEnum reason, int statusCode, String response) {
         showProgress(false);
         enableRefreshMenuOption(true);
+
+        if (ForecastClient.FailureReasonEnum.ERROR_SERVICE.equals(reason)) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.server_error)
+                    .setMessage(R.string.server_error_body)
+                    .setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent i = new Intent(MainActivity.this, SettingsActivity.class);
+                            startActivityForResult(i, ACTIVITY_RESULT_SETTINGS_RECOVERY);
+                        }
+                    })
+                    .setCancelable(false)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.network_error)
+                    .setMessage(R.string.network_error_body)
+                    .setNeutralButton(android.R.string.ok, null)
+                    .setCancelable(true)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
     }
 
     private void showProgress(boolean show) {
@@ -268,11 +308,11 @@ public class MainActivity
         if (isFinishing())
             return;
 
+        String newPostalCode = getPostalCodeFromPreferences();
+        boolean newUseMetric = getUseMetricPreferences();
+
         switch (requestCode) {
             case ACTIVITY_RESULT_SETTINGS:
-                String newPostalCode = getPostalCodeFromPreferences();
-                boolean newUseMetric = getUseMetricPreferences();
-
                 if (!TextUtils.equals(postalCode, newPostalCode)) {
                     postalCode = newPostalCode;
                     useMetric = newUseMetric;
@@ -282,7 +322,12 @@ public class MainActivity
                     useMetric = newUseMetric;
                     dispatchUseMetricChanged();
                 }
+                break;
 
+            case ACTIVITY_RESULT_SETTINGS_RECOVERY:
+                postalCode = newPostalCode;
+                useMetric = newUseMetric;
+                dispatchPostalCodeChanged();
                 break;
         }
     }
@@ -401,10 +446,5 @@ public class MainActivity
             }
             return null;
         }
-    }
-
-    private boolean isAirplaneModeOn() {
-        final ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo() == null;
     }
 }

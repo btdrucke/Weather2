@@ -136,7 +136,7 @@ public class ForecastResponseHandler extends AsyncHttpResponseHandler {
     public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
         // TODO: check for socket timeout.
         final String responseString = new String(errorResponse);
-        listener.onFailure(ForecastClient.FailureReasonEnum.ERROR_SERVICE, statusCode, responseString);
+        listener.onFailure(ForecastClient.FailureReasonEnum.ERROR_NETWORK, statusCode, responseString);
     }
 
     private static Integer getIntegerIfExists(JSONObject node, String name) {

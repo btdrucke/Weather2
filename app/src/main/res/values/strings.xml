@@ -87,4 +87,8 @@
     <string name="wind_value_W">W %1$d %2$s</string>
     <string name="wind_value_WNW">WNW %1$d %2$s</string>
     <string name="wind_value_WSW">WSW %1$d %2$s</string>
+    <string name="server_error">Server error</string>
+    <string name="server_error_body">The weather server has gotten confused.  Please try a different postal code.</string>
+    <string name="network_error">Network error</string>
+    <string name="network_error_body">We are having trouble contacting the weather server.  Please check your internet connection and try again.</string>
 </resources>
