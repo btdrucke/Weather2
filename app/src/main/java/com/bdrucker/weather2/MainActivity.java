@@ -21,22 +21,31 @@ import android.view.View;
 import com.bdrucker.weather2.api.ForecastClient;
 import com.bdrucker.weather2.data.Forecast;
 import com.bdrucker.weather2.data.FutureForecast;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity
         extends ActionBarActivity
         implements ActionBar.TabListener, ForecastClient.ForecastListener {
 
-    private static final int RESULT_SETTINGS = 1;
+    private static final int ACTIVITY_RESULT_SETTINGS = 1;
+
     private static final int POSITION_CURRENT_WEATHER = 0;
     private static final int POSITION_FORECAST_WEATHER = 1;
-    private static final String DEFAULT_POSTAL_CODE = "97206";
-    private static final String DEFAULT_UNITS = SettingsActivity.PREF_VALUE_UNITS_METRIC;
+
+    private static final String PREF_DEFAULT_POSTAL_CODE = "97206";
+    private static final String PREF_DEFAULT_UNITS = SettingsActivity.PREF_VALUE_UNITS_METRIC;
+    private static final String PREF_KEY_LAST_UPDATED = "last_updated";
+    private static final String PREF_KEY_CACHED_FORECAST = "cached_forecast";
+    private static final String PREF_KEY_CACHED_FUTURE_FORECASTS = "cached_future_forecast";
+
+    private static final long REFRESH_INTERVAL_MINUTES = 30;
 
     private SharedPreferences prefs;
 
@@ -51,14 +60,25 @@ public class MainActivity
     private ForecastWeatherFragment forecastWeatherFragment;
 
     private ForecastClient apiClient;
+    private Gson gson;
+
+    /**
+     * Handle to the refresh menu item so we can disable it during API calls.
+     */
     private MenuItem refreshMenuOption;
+
     private String postalCode;
     private boolean useMetric;
+    private Date lastUpdated;
+    private Forecast forecast;
+    private List<FutureForecast> futureForecasts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        gson = new Gson();
+
         initializePreferences();
 
         progressView = findViewById(R.id.progress);
@@ -98,23 +118,31 @@ public class MainActivity
 
     private void initializePreferences() {
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = prefs.edit();
+        getLastUpdateFromPreferences();
 
+        SharedPreferences.Editor editor = prefs.edit();
         if (prefs.contains(SettingsActivity.PREF_KEY_POSTAL_CODE))
             postalCode = getPostalCodeFromPreferences();
         else {
-            editor.putString(SettingsActivity.PREF_KEY_POSTAL_CODE, DEFAULT_POSTAL_CODE);
-            postalCode = DEFAULT_POSTAL_CODE;
+            editor.putString(SettingsActivity.PREF_KEY_POSTAL_CODE, PREF_DEFAULT_POSTAL_CODE);
+            postalCode = PREF_DEFAULT_POSTAL_CODE;
         }
 
         if (!prefs.contains(SettingsActivity.PREF_KEY_UNITS))
             useMetric = getUseMetricPreferences();
         else {
-            editor.putString(SettingsActivity.PREF_KEY_UNITS, DEFAULT_UNITS);
-            useMetric = SettingsActivity.PREF_VALUE_UNITS_METRIC.equals(DEFAULT_UNITS);
+            editor.putString(SettingsActivity.PREF_KEY_UNITS, PREF_DEFAULT_UNITS);
+            useMetric = SettingsActivity.PREF_VALUE_UNITS_METRIC.equals(PREF_DEFAULT_UNITS);
         }
 
-        editor.commit();
+        editor.apply();
+    }
+
+    private void checkForUpdate() {
+        if (areFragmentsAttached() && isTimeForRefresh())
+            fetchWeather();
+        else
+            onSuccessInternal();
     }
 
     private void fetchWeather() {
@@ -143,7 +171,7 @@ public class MainActivity
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
-            startActivityForResult(new Intent(this, SettingsActivity.class), RESULT_SETTINGS);
+            startActivityForResult(new Intent(this, SettingsActivity.class), ACTIVITY_RESULT_SETTINGS);
             handled = true;
         } else if (id == R.id.action_refresh) {
             fetchWeather();
@@ -162,18 +190,14 @@ public class MainActivity
         else if (fragment instanceof ForecastWeatherFragment)
             forecastWeatherFragment = (ForecastWeatherFragment) fragment;
 
-        // TODO: only load every half hour.
-        if (areFragmentsAttached())
-            fetchWeather();
+        checkForUpdate();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-//        // TODO: only load every half hour.
-//        if (areFragmentsAttached())
-//            fetchWeather();
+        checkForUpdate();
     }
 
     private boolean areFragmentsAttached() {
@@ -205,12 +229,21 @@ public class MainActivity
 
     @Override
     public void onSuccess(Forecast forecast, List<FutureForecast> futureForecasts) {
+        lastUpdated = new Date();
+        this.forecast = forecast;
+        this.futureForecasts = futureForecasts;
+        saveLastUpdateToPreferences();
+
+        onSuccessInternal();
+    }
+
+    private void onSuccessInternal() {
         showProgress(false);
         enableRefreshMenuOption(true);
+
         if (areFragmentsAttached()) {
-            final Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
-            currentWeatherFragment.setData(forecast, postalCode, now, useMetric);
-            forecastWeatherFragment.setData(futureForecasts, postalCode, now, useMetric);
+            currentWeatherFragment.setData(forecast, postalCode, lastUpdated, useMetric);
+            forecastWeatherFragment.setData(futureForecasts, postalCode, lastUpdated, useMetric);
         }
     }
 
@@ -236,7 +269,7 @@ public class MainActivity
             return;
 
         switch (requestCode) {
-            case RESULT_SETTINGS:
+            case ACTIVITY_RESULT_SETTINGS:
                 String newPostalCode = getPostalCodeFromPreferences();
                 boolean newUseMetric = getUseMetricPreferences();
 
@@ -280,6 +313,55 @@ public class MainActivity
 
     private boolean getUseMetricPreferences() {
         return SettingsActivity.PREF_VALUE_UNITS_METRIC.equals(prefs.getString(SettingsActivity.PREF_KEY_UNITS, null));
+    }
+
+    private void getLastUpdateFromPreferences() {
+        long time = prefs.getLong(PREF_KEY_LAST_UPDATED, -1);
+        lastUpdated = (time == -1) ? null : new Date(time);
+
+        try {
+            String forecastString = prefs.getString(PREF_KEY_CACHED_FORECAST, null);
+            forecast = gson.fromJson(forecastString, Forecast.class);
+
+            String futureForecastsString = prefs.getString(PREF_KEY_CACHED_FUTURE_FORECASTS, null);
+            futureForecasts = gson.fromJson(futureForecastsString, new TypeToken<List<FutureForecast>>() {
+            }.getType());
+        } catch (JsonSyntaxException | NullPointerException e) {
+            lastUpdated = null;
+            forecast = null;
+            futureForecasts = null;
+
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.remove(PREF_KEY_LAST_UPDATED);
+            editor.remove(PREF_KEY_CACHED_FORECAST);
+            editor.remove(PREF_KEY_CACHED_FUTURE_FORECASTS);
+            editor.apply();
+        }
+    }
+
+    /**
+     * Save the last successful API response in shared preferences.
+     */
+    private void saveLastUpdateToPreferences() {
+        SharedPreferences.Editor editor = prefs.edit();
+
+        editor.putLong(PREF_KEY_LAST_UPDATED, lastUpdated.getTime());
+
+        String a = gson.toJson(forecast);
+        editor.putString(PREF_KEY_CACHED_FORECAST, a);
+
+        String b = gson.toJson(futureForecasts);
+        editor.putString(PREF_KEY_CACHED_FUTURE_FORECASTS, b);
+
+        editor.apply();
+    }
+
+    private boolean isTimeForRefresh() {
+        if (lastUpdated == null)
+            return true;
+
+        final long minutesSinceLastUpdate = TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - lastUpdated.getTime());
+        return minutesSinceLastUpdate >= REFRESH_INTERVAL_MINUTES;
     }
 
     /**

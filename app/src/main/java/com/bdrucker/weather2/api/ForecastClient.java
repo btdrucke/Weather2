@@ -9,9 +9,6 @@ import com.loopj.android.http.RequestParams;
 
 import java.util.List;
 
-/**
- * Created by bdrucker on 1/19/15.
- */
 public class ForecastClient {
 
     // The weather2 service endpoint.
@@ -26,9 +23,6 @@ public class ForecastClient {
     // Query parameter values for metric/imperial units
     private static final String VALUE_TEMPERATURE_UNITS_METRIC = "c";
     private static final String VALUE_WIND_SPEED_METRIC = "kph";
-
-    // Calling context used for getting string resources, etc.
-    private final Context context;
 
     // HTTP client and handler used for the GET request.
     private final AsyncHttpClient client;
@@ -62,11 +56,11 @@ public class ForecastClient {
         /**
          * Forecast fetch has failed for some reason.
          *
-         * @param reason     Why the fetch has failed.
-         * @param statusCode HTTP status code of the response.
-         * @param response   Response body text.  May be null.
+         * @param reason         Why the fetch has failed.
+         * @param statusCode     HTTP status code of the response.
+         * @param responseString Response body text.  May be null.
          */
-        public void onFailure(FailureReasonEnum reason, int statusCode, String response);
+        public void onFailure(FailureReasonEnum reason, int statusCode, String responseString);
     }
 
     /**
@@ -82,7 +76,6 @@ public class ForecastClient {
         if (listener == null)
             throw new IllegalArgumentException("Listener is required");
 
-        this.context = context;
         this.client = new AsyncHttpClient();
         this.responseHandler = new ForecastResponseHandler(listener);
     }
