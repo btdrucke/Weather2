@@ -1,6 +1,6 @@
 # Weather2
 
-This Android application fetches weather prediction ddata using the
+This Android application fetches weather prediction data using the
 2-day API at http://www.weather2.com.  By default, the app displays a
 forecast for the 97206 postal code, shown in metric units.  There are
 two tabs which bring the user to either the current weather page or
@@ -10,7 +10,7 @@ The minimum SDK version is 11 and it was built with Android Studio
 1.0.1.  (I don't have 1.0.2 installed, but it should work with 1.0.2
 tools).
 
-Some notable features:
+### Some Notable Features
 
 * Multi-screen layouts using multiple resource qualifications such as
   layout "land" and "w600dp".
@@ -27,3 +27,22 @@ Some notable features:
   when the app is in the foreground.
 * Postman REST tool confiuration to test the weather2 service, posted
   here: https://www.getpostman.com/collections/51ac37efb2a8856622fa.
+
+### Next Steps
+
+This effort was intentionally time-boxed at two days.  As such, there
+was not time for everything.  The next steps I would take on this
+application if I were to continue development are:
+
+* Custom tabs and animations.  Tabs currently are implemented with the
+  support action bar.  This works and was quick, but a custom control
+  with press state and an animating underbar would look better.
+* Better unit test coverage.  There is one test of a full success and
+  one test of an utter failure, but there are middle cases that could
+  use attention.  The service could return data that is well formed
+  JSON but missing key elements of data.  I have coded some defense,
+  and I have observed this to work in the cases were wind speed is
+  sometimes unavailable.  But I have not seen a natural example of
+  reuired data which is missing.  And automated test would help here.
+* Test hooks for decreasing the half-hour service timeout would help
+  test this feature.
