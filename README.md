@@ -48,3 +48,6 @@ application if I were to continue development are:
   required data which is missing.  And automated test would help here.
 * Test hooks for decreasing the half-hour service timeout would help
   test this feature.
+* This needs testing on a wider sample of intended OS versions and
+  targeted devices.  I have access to 4.3+ Genymotion emulators and
+  4.4+ devices, so my testing has not been complete.
