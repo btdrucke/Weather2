@@ -140,7 +140,7 @@ public class ForecastResponseHandlerTest extends InstrumentationTestCase {
         }
     }
 
-    public void testStart() {
+    public void testSuccess() {
 
         Forecast todayForecast = new Forecast.Builder()
                 .setHumidity(100)
@@ -187,6 +187,14 @@ public class ForecastResponseHandlerTest extends InstrumentationTestCase {
         ForecastResponseHandler handler = new ForecastResponseHandler(listener);
         handler.onStart();
         handler.onSuccess(200, null, loadAsset("response_success.json"));
+        listener.checkCalls();
+    }
+
+    public void testServerError() {
+        TestForecastListener listener = new TestForecastListener(null, null);
+        ForecastResponseHandler handler = new ForecastResponseHandler(listener);
+        handler.onStart();
+        handler.onSuccess(200, null, loadAsset("response_server_error.json"));
         listener.checkCalls();
     }
 }
