@@ -12,10 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
 public class ForecastResponseHandlerTest extends InstrumentationTestCase {
 
@@ -117,7 +114,6 @@ public class ForecastResponseHandlerTest extends InstrumentationTestCase {
             for (int i = 0; i < testFutureForecasts.size(); ++i) {
                 FutureForecast tf = testFutureForecasts.get(i);
                 FutureForecast f = forecasts.get(i);
-                assertEquals("Forecast dates on items[" + i + "] differ", tf.forecastDate, f.forecastDate);
 
                 checkOneForecast(resources, tf.day, f.day);
                 checkOneForecast(resources, tf.night, f.night);
@@ -155,13 +151,9 @@ public class ForecastResponseHandlerTest extends InstrumentationTestCase {
                 .setWindKilometersPerHour(10)
                 .build();
 
-        Calendar cal = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
         List<FutureForecast> futureForecasts = new ArrayList<>(2);
 
-        cal.clear();
-        cal.set(2015, Calendar.JANUARY, 16);
         futureForecasts.add(new FutureForecast(
-                cal.getTime(),
                 new Forecast.Builder()
                         .setDegreesCelsius(12)
                         .setWeatherCode(10)
@@ -176,10 +168,7 @@ public class ForecastResponseHandlerTest extends InstrumentationTestCase {
                         .build()
         ));
 
-        cal.clear();
-        cal.set(2015, Calendar.JANUARY, 17);
         futureForecasts.add(new FutureForecast(
-                cal.getTime(),
                 new Forecast.Builder()
                         .setDegreesCelsius(10)
                         .setWeatherCode(3)
