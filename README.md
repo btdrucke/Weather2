@@ -1,10 +1,10 @@
 # Weather2
 
 This Android application fetches weather prediction data using the
-2-day API at http://www.weather2.com.  By default, the app displays a
-forecast for the 97206 postal code, shown in metric units.  There are
-two tabs which bring the user to either the current weather page or
-the 2-day future forecast.
+2-day API at http://www.myweather2.com.  By default, the app displays
+a forecast for the 97206 postal code, shown in metric units.  There
+are two tabs which bring the user to either the current weather page
+or the 2-day future forecast.
 
 The minimum SDK version is 11 and it was built with Android Studio
 1.0.1.  (I don't have 1.0.2 installed, but it should work with 1.0.2
