@@ -113,6 +113,7 @@ public class MainActivity
         viewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
+                tabPositionState = position;
                 actionBar.setSelectedNavigationItem(position);
             }
         });
@@ -241,7 +242,8 @@ public class MainActivity
     public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
         // When the given tab is selected, switch to the corresponding page in
         // the ViewPager.
-        viewPager.setCurrentItem(tab.getPosition());
+        tabPositionState = tab.getPosition();
+        viewPager.setCurrentItem(tabPositionState);
     }
 
     @Override
