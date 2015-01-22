@@ -44,6 +44,8 @@ public class MainActivity
      */
     private static final int ACTIVITY_RESULT_SETTINGS_RECOVERY = 2;
 
+    private static final String STATE_TAB_POSITION = "tab_position";
+
     private static final int POSITION_CURRENT_WEATHER = 0;
     private static final int POSITION_FORECAST_WEATHER = 1;
 
@@ -85,6 +87,7 @@ public class MainActivity
      * Keep track of when we have resumed.  Sometimes fragments attach before onResume(), sometimes after.
      */
     private boolean hasResumed = false;
+    private int tabPositionState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +129,20 @@ public class MainActivity
                             .setTabListener(this));
         }
 
+        if (savedInstanceState == null)
+            tabPositionState = POSITION_CURRENT_WEATHER;
+        else {
+            tabPositionState = savedInstanceState.getInt(STATE_TAB_POSITION, POSITION_CURRENT_WEATHER);
+            viewPager.setCurrentItem(tabPositionState);
+        }
+
         apiClient = new ForecastClient(this, this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putInt(STATE_TAB_POSITION, tabPositionState);
+        super.onSaveInstanceState(outState);
     }
 
     private void initializePreferences() {
